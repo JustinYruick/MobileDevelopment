@@ -1,14 +1,24 @@
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.text.ParseException;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.text.MaskFormatter;
 
 //@author Justin & Loai
 
@@ -16,7 +26,14 @@ public class Main extends JFrame
 {
 
 	
-	public static void main(String[] args) 
+	// standard boilerplate code often seen
+	static Connection myConnection = null;
+	static Statement myStmtement = null;
+	static ResultSet myResult = null;
+	static PreparedStatement mypreparedStatment = null;
+    
+	
+	public static void main(String[] args)
 	{
 		// TODO Auto-generated method stub
 
@@ -25,14 +42,36 @@ public class Main extends JFrame
 		String actorLastName = "";
 		//JButton btnBackMain = new JButton("Main Menu");
 		
+	
+        //MarkFormatter will be used in the below code as a data validation method
+		MaskFormatter mask = null;
+        try {
+            // Create a MaskFormatter for accepting phone number, the # symbol accept
+            // only a number. We can also set the empty value with a place holder
+            // character.
+            mask = new MaskFormatter("U????????????????????????????????????????????"); //VARCHAR(45) with capitalized first letter
+            mask.setPlaceholderCharacter(' ');
+        } catch (ParseException e) {
+            e.printStackTrace();
+            System.out.println("Caught ParseException...");
+        }
 		
+        try
+		{
+		///creating connection
+			myConnection = DriverManager.getConnection(
+					         "jdbc:mysql://localhost:3306/sakila?useSSL=false&allowPublicKeyRetrieval=true", 
+					                       "root","password");
+		
+		//Creating statment
+		myStmtement = myConnection.createStatement();
 		//------------------------------------
 		//------------Main Frame--------------
 		//------------------------------------
 		//Boiler plate
 		JFrame frameMain = new JFrame("Sakila DVD Rental Store");
 		frameMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frameMain.setSize(800,500);
+		frameMain.setSize(600,400);
 		frameMain.setLayout(new GridLayout(3,1,10,10));
 		frameMain.setLocationRelativeTo(null);
 	    
@@ -45,8 +84,9 @@ public class Main extends JFrame
 	    frameMain.add(mainPanelBottom);
 	    
 	    //creates GUI elements
-	    JLabel lblTitle = new JLabel("Welcome to KLJS Movie Rental");
+	    JLabel lblTitle = new JLabel("                                                                     Welcome to KLJS Movie Rental");
 	    lblTitle.setAlignmentX(400);
+	    lblTitle.setAlignmentY(300);
 	    JButton btnCustomer = new JButton("Add Customer");
 	    btnCustomer.setSize(20, 20);
 	    JButton btnActor = new JButton("Add Actor");
@@ -172,9 +212,12 @@ public class Main extends JFrame
 		JLabel lbl_aFirst = new JLabel("First Name:");
 		JLabel lbl_aLast = new JLabel("Last Name:");
 		JButton btn_aAdd = new JButton("Add");
-		JTextField tf_aFirst = new JTextField();
-		JTextField tf_aLast = new JTextField();
-		JButton btn_aToMain = new JButton("Back to Main");
+		JTextField tf_aFirst = new JTextField(15);
+		JTextField tf_aLast = new JTextField(15);
+        JButton btn_aToMain = new JButton("Back to Main");
+        
+        //JFormattedTextField tf_aFirst = new JFormattedTextField(mask);
+		//JFormattedTextField tf_aLast = new JFormattedTextField(mask);
 		
 		//adds elements for the panel
 		actorPanelTop.add(lbl_aTitle);
@@ -184,6 +227,30 @@ public class Main extends JFrame
 		actorPanelContent.add(tf_aLast);
 		actorPanelBot.add(btn_aAdd);
 		actorPanelBot.add(btn_aToMain);
+		
+	    //------------------------------------
+	    //Add Actor Button
+	  	//add an actor to the database
+	  	//------------------------------------
+	    btn_aAdd.addActionListener(new ActionListener()
+	    { 
+	    	public void actionPerformed(ActionEvent ev)
+	        {
+	    	   //System.out.println("I am here");
+	    		String first_name_SQL = tf_aFirst.getText();
+	    		String last_name_SQL = tf_aLast.getText();
+	    		
+				try {
+					
+					 int returnedValue = myStmtement.executeUpdate("INSERT INTO sakila.actor(first_name,last_name)VALUES (\""+first_name_SQL+"\",\""+last_name_SQL+"\");");
+					
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	        }
+	    });
+		
 		
 		//------------------------------------
 	    //------------Actor Popup-------------
@@ -220,6 +287,7 @@ public class Main extends JFrame
 		popupPanelContent.add(tf_pLast);
 		popupPanelBot.add(btn_pAdd);
 		popupPanelBot.add(btn_pDone);
+	    
 		
 		//------------------------------------
 	    //------------Film Frame--------------
@@ -236,7 +304,37 @@ public class Main extends JFrame
 				                ,"1990","1991","1992","1993","1994","1995","1996","1997","1998","1999","2000"
 				                ,"2000","2001","2002","2003","2004","2005","2006","2007","2008","2009","2010"
 				                ,"2011","2012","2013","2014","2015","2016","2017","2018","2019","2020"};
-		String[] langaguesL = {"English","French", "Spanish", "German", "Russian", "Bangla", "Bulgarian", "Arabic", "Ukranian"};
+		
+		//populating the string Array-> 
+		String[] langaguesL = new String[6];
+		
+		myStmtement = myConnection.createStatement();
+		
+		myResult = myStmtement.executeQuery("SELECT name FROM sakila.language;");
+		
+		ResultSetMetaData metaData = myResult.getMetaData();
+		int numColumns = metaData.getColumnCount();
+		//int i = 0;
+		int j=0;
+		while(myResult.next())
+		{
+			for(int i = 1; i <= numColumns; i++)
+			{
+				//inner for loop handles printing to screen
+				System.out.printf("%-8s\t\t", myResult.getObject(i));
+				
+				langaguesL[j] = (String) myResult.getObject(i);
+				j++;
+			}//end for
+			//line feed
+			System.out.println();
+			
+		}//end while
+		
+		
+		
+		
+		
 		String[] rentalDurationL = {"3","4","5","6","7"};
 		String[] ratingL = {"G","PG","14A","18A","R"};
 		
@@ -303,6 +401,34 @@ public class Main extends JFrame
 		//disableing buttons
 		btn_fAddA.setEnabled(false);
 		
+	    //------------------------------------
+	    //Add Film Button
+	  	//add an Film to the database
+	  	//------------------------------------
+	    btn_fAddF.addActionListener(new ActionListener()
+	    { 
+	    	public void actionPerformed(ActionEvent ev) 
+	        {
+	    		btn_fAddF.setEnabled(false);
+	    		btn_fAddA.setEnabled(true);
+	    		String langiage_selected = (String) cb_langaugeList.getSelectedItem();
+	    		
+	    		
+	    		myStmtement = myConnection.createStatement();
+	    		
+	    		try {
+					myResult = myStmtement.executeQuery("SELECT language_id FROM sakila.language where name = 'English';");
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    		
+	    		
+	        }
+	    });
+		
+		
+		
 		
 		//------------------------------------
 	    //-----------Rental Frame-------------
@@ -320,7 +446,7 @@ public class Main extends JFrame
 		
 		//boiler plate code
 		JFrame frameRental = new JFrame("Movie Rentals");
-		frameRental.setSize(800,500);
+		frameRental.setSize(500,300);
 		frameRental.setLayout(new GridLayout(3,1,10,10));
 		frameRental.setLocationRelativeTo(null);
 		
@@ -353,11 +479,7 @@ public class Main extends JFrame
 		rentalPanelContent.add(cb_staffList);
 		rentalPanelBot.add(btn_rentAddRental);
 		rentalPanelBot.add(btn_rentToMain);
-		
-		
-		
-		
-		
+
 		//------------------------------------
 	    //-----------Report Frame-------------
 	    //------------------------------------
@@ -440,6 +562,9 @@ public class Main extends JFrame
 	        {
 	    		frameMain.setVisible(false);
 	    		frameFilm.setVisible(true);
+	    		btn_fAddF.setEnabled(true);
+	    		btn_fAddA.setEnabled(false);
+	    		
 	        }
 	    });
 	    
@@ -546,19 +671,7 @@ public class Main extends JFrame
 	   
 	    
 	   
-	    
-	    //------------------------------------
-	    //Add Actor Button
-	  	//add an actor to the database
-	  	//------------------------------------
-	    btn_aAdd.addActionListener(new ActionListener()
-	    { 
-	    	public void actionPerformed(ActionEvent ev)
-	        {
-	    	   
-	        }
-	    });
-	    
+	 
 	    //------------------------------------
 	    //Add Actor to film popup Button
 	  	//add an actor to the database
@@ -571,18 +684,6 @@ public class Main extends JFrame
 	        }
 	    });
 	    
-	    //------------------------------------
-	    //Add Film Button
-	  	//add an Film to the database
-	  	//------------------------------------
-	    btn_fAddF.addActionListener(new ActionListener()
-	    { 
-	    	public void actionPerformed(ActionEvent ev)
-	        {
-	    		btn_fAddF.setEnabled(false);
-	    		btn_fAddA.setEnabled(true);
-	        }
-	    });
 	    
 	    //------------------------------------
 	    //Popup done Button
@@ -616,10 +717,35 @@ public class Main extends JFrame
 	        }
 	    });
 	    
-	    
+		}//end try
+		catch(SQLException ex)
+		{
+			System.out.println("SQL Exception, message is: " + ex.getMessage());
+		}
+		catch(Exception ex)
+		{
+			System.out.println("Some other Exception, message is: " + ex.getMessage());
+		}
+		finally
+		{//Clean up and finally implemantation 
+			
+			try
+			{
+				if(myResult != null)
+				  myResult.close();
+				if(myStmtement != null)
+					myStmtement.close();
+				if(myConnection != null)
+				  myConnection.close();	
+			}//end try
+			catch(SQLException ex)
+			{
+				System.out.println("SQLException INSIDE finally block: "+ ex.getMessage());
+				ex.printStackTrace();
+			}
+		}//end finally
 	    
 	        
 	}//end of Main
 
 }//end of main class
-
