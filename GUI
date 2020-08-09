@@ -509,23 +509,23 @@ public class Main extends JFrame
 		
 		//Creates elements
 		JLabel lbl_rentTitle = new JLabel("Enter the information for the Rental:");
-		JLabel lbl_rentCustId = new JLabel("Invetory Id:");
+		JLabel lbl_rentCustId = new JLabel("Film Id:");
 		JLabel lbl_rentInvId = new JLabel("Customer Id:");
 		JLabel lbl_rentStaffId = new JLabel("Staff Id:");
 		JComboBox<?> cb_iventoryList = new JComboBox<Object>(inventoryList);
-		JComboBox<?> cb_customerList = new JComboBox<Object>(customerList);
-		JComboBox<?> cb_staffList = new JComboBox<Object>(staffList);
+		JTextField tf_rentCustId = new JTextField();
+		JTextField tf_rentStaffId = new JTextField();
 		JButton btn_rentAddRental = new JButton("Add Rental");
 		JButton btn_rentToMain = new JButton("Back to Main");
 		
 		//adds elements From Frames
 		rentalPanelTop.add(lbl_rentTitle);
 		rentalPanelContent.add(lbl_rentCustId);
-		rentalPanelContent.add(cb_customerList);
+		rentalPanelContent.add(tf_rentCustId);
 		rentalPanelContent.add(lbl_rentInvId);
 		rentalPanelContent.add(cb_iventoryList);
 		rentalPanelContent.add(lbl_rentStaffId);
-		rentalPanelContent.add(cb_staffList);
+		rentalPanelContent.add(tf_rentStaffId);
 		rentalPanelBot.add(btn_rentAddRental);
 		rentalPanelBot.add(btn_rentToMain);
 
