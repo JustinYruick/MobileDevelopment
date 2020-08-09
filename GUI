@@ -117,8 +117,6 @@ public class Main extends JFrame
 	    
 	    //variables for frame
 	    String[] cityList = {};
-		String[] provinceList= {};
-		String[] countryList= {};
 	    
 	    //Create and adds the panels to the frame
 		JPanel custPanelTop = new JPanel(new GridLayout(1,1));
@@ -128,22 +126,46 @@ public class Main extends JFrame
 		frameCust.add(custPanelContent);
 		frameCust.add(custPanelBot);
 		
+	   myStmtement = myConnection.createStatement();
+		
+		myResult = myStmtement.executeQuery("SELECT city from Sakila.city;");
+		
+		ResultSetMetaData metaDataC = myResult.getMetaData();
+		int numColumnsC = metaDataC.getColumnCount();
+		//int i = 0;
+		int j1=0;
+		while(myResult.next())
+		{
+			for(int i = 1; i <= numColumnsC; i++)
+			{
+				//inner for loop handles printing to screen
+				System.out.printf("%-8s\t\t", myResult.getObject(i));
+				
+				cityList[j1] = (String) myResult.getObject(i);
+				j1++;
+			}//end for
+			//line feed
+			System.out.println();
+			
+		}//end while
+		
+		
 		//GUI element 
 		JLabel lbl_cTitle = new JLabel("Enter Customer information");
 		JLabel lbl_cFirstName = new JLabel("First Name:");
 		JLabel lbl_cLastName = new JLabel("Last Name:");
 		JLabel lbl_cEmail = new JLabel("Email Address:");
 		JLabel lbl_cCity = new JLabel("City:");
-		JLabel lbl_cProvince = new JLabel("Province:");
-		JLabel lbl_cCountry = new JLabel("Country:");
+		JLabel lbl_cDistrict = new JLabel("District:");
 		JLabel lbl_cAddress = new JLabel("Address:");
+		JLabel lbl_cAddress2 = new JLabel("Address2:");
 		JTextField tf_cFirstName = new JTextField();
 		JTextField tf_cLastName = new JTextField();
 		JTextField tf_cEmailAddress = new JTextField();
 		JTextField tf_cAddress = new JTextField();
+		JTextField tf_cAddress2 = new JTextField();
+		JTextField tf_cDistrict = new JTextField();
 		JComboBox<?> cb_cCuty = new JComboBox<Object>(cityList);
-		JComboBox<?> cb_cProvince = new JComboBox<Object>(provinceList);
-		JComboBox<?> cb_cCountry = new JComboBox<Object>(countryList);
 		JButton btn_cAdd = new JButton("Add Cusotmer");
 		JButton btn_cToMain = new JButton("Back to Main");
 		
@@ -157,12 +179,12 @@ public class Main extends JFrame
 		custPanelContent.add(tf_cEmailAddress);
 		custPanelContent.add(lbl_cAddress);
 		custPanelContent.add(tf_cAddress);
+		custPanelContent.add(lbl_cAddress2);
+		custPanelContent.add(tf_cAddress2);
 		custPanelContent.add(lbl_cCity);
 		custPanelContent.add(cb_cCuty);
-		custPanelContent.add(lbl_cProvince);
-		custPanelContent.add(cb_cProvince);
-		custPanelContent.add(lbl_cCountry);
-		custPanelContent.add(cb_cCountry);
+		custPanelContent.add(lbl_cDistrict);
+		custPanelContent.add(tf_cDistrict);
 		custPanelBot.add(btn_cAdd);
 		custPanelBot.add(btn_cToMain);
 		
@@ -363,6 +385,7 @@ public class Main extends JFrame
 		JTextField tf_fDescription = new JTextField();
 		JTextField tf_fLength = new JTextField();
 		JTextField tf_fRCost = new JTextField();
+		JTextField tf_fSpecialFeatures = new JTextField();
 		JComboBox<?> cb_yearList = new JComboBox<Object>(releaserYearL);
 		JComboBox<?> cb_langaugeList = new JComboBox<Object>(langaguesL);
 		JComboBox<?> cb_rDurationList = new JComboBox<Object>(rentalDurationL);
@@ -392,6 +415,7 @@ public class Main extends JFrame
 		filmPanelContent.add(lbl_fRatting);
 		filmPanelContent.add(cb_RatingList);
 		filmPanelContent.add(lbl_fSpecialFeatures);
+		filmPanelContent.add(tf_fSpecialFeatures);
 		
 		
 		filmPanelBot.add(btn_fAddA);
@@ -457,6 +481,31 @@ public class Main extends JFrame
 		frameRental.add(rentalPanelTop);
 		frameRental.add(rentalPanelContent);
 		frameRental.add(rentalPanelBot);
+		
+
+		myStmtement = myConnection.createStatement();
+		
+		myResult = myStmtement.executeQuery("SELECT title FROM sakila.film;");
+		
+		ResultSetMetaData metaDataI = myResult.getMetaData();
+		int numColumnsI = metaDataI.getColumnCount();
+		//int i = 0;
+		int j2=0;
+		while(myResult.next())
+		{
+			for(int i = 1; i <= numColumnsI; i++)
+			{
+				//inner for loop handles printing to screen
+				System.out.printf("%-8s\t\t", myResult.getObject(i));
+				
+				inventoryList[j2] = (String) myResult.getObject(i);
+				j2++;
+			}//end for
+			//line feed
+			
+		}//end while
+		
+		
 		
 		//Creates elements
 		JLabel lbl_rentTitle = new JLabel("Enter the information for the Rental:");
